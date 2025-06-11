@@ -1,2 +1,2 @@
 #!/bin/bash
-f(){ local BEST=School }
+f(){ local BEST=School echo BEST=$BEST} f
