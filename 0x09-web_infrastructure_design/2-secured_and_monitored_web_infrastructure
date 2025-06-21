@@ -1,0 +1,64 @@
+# Secured and Monitored Web Infrastructure Design for www.foobar.com
+
+This document outlines a three-server web infrastructure design for hosting the website `www.foobar.com`. The infrastructure is secured with firewalls and HTTPS, monitored with data collection tools, and built on a distributed setup with Nginx, an application server, HAProxy, MySQL (Primary-Replica cluster), and application files.
+
+## Repository Information
+- **GitHub Repository**: [alx-system_engineering-devops](https://github.com/alx-system_engineering-devops)
+- **Directory**: `0x09-web_infrastructure_design`
+- **File**: `2-secured_and_monitored_web_infrastructure`
+
+## Requirements
+- **Additional Components**:
+  - 3 firewalls
+  - 1 SSL certificate for HTTPS on `www.foobar.com`
+  - 3 monitoring clients (e.g., Sumo Logic data collectors)
+- **Explanations Required**:
+  - Purpose of each additional element
+  - Role of firewalls
+  - Why traffic is served over HTTPS
+  - Purpose of monitoring
+  - How the monitoring tool collects data
+  - How to monitor web server Queries Per Second (QPS)
+- **Issues to Address**:
+  - Why terminating SSL at the load balancer is an issue
+  - Why having only one MySQL server for writes is an issue
+  - Why having servers with all the same components (database, web server, application server) might be a problem
+
+## User Journey
+1. **User Action**: A user enters `https://www.foobar.com` in their browser and presses Enter.
+2. **DNS Resolution**:
+   - The browser queries a DNS resolver to resolve `www.foobar.com`.
+   - The resolver returns the IP address of the load balancer (e.g., `8.8.8.8`).
+3. **Request to Load Balancer**:
+   - The browser sends an HTTPS request to the load balancer’s IP on port 443.
+   - HAProxy, with an SSL certificate, terminates the HTTPS connection and distributes the request to one of the two web/application servers using a round-robin algorithm.
+4. **Server Processing**:
+   - The selected server’s Nginx receives the request.
+   - Nginx serves static content or forwards dynamic requests to the application server (e.g., PHP-FPM).
+   - The application server processes the request using application files and queries the MySQL database (Primary for writes, Replica for reads).
+   - The application server generates a response (e.g., HTML) and sends it back to Nginx.
+5. **Response to User**:
+   - Nginx returns the response to HAProxy, which forwards it to the user’s browser over HTTPS.
+   - The browser renders the webpage.
+
+## Infrastructure Diagram
+```
+[User's Browser] --(HTTPS)--> [Internet] --(DNS: www.foobar.com -> 8.8.8.8)--> [Load Balancer: 8.8.8.8]
+                                                                 |  (HAProxy + SSL + Firewall + Monitoring)
+                                                                 v
++----------------------------------+  +----------------------------------+
+| Server 1                         |  | Server 2                         |
+| +------------------+             |  | +------------------+             |
+| | Nginx Web Server |<--> App     |  | | Nginx Web Server |<--> App     |
+| +------------------+     Server  |  | +------------------+     Server  |
+| +------------------+             |  | +------------------+             |
+| | Application Files|             |  | | Application Files|             |
+| +------------------+             |  | +------------------+             |
+| [Firewall] [Monitoring Client]   |  | [Firewall] [Monitoring Client]   |
++----------------------------------+  +----------------------------------+
+                                              |
+                                              v
++----------------------------------+
+| Server 3                         |
+| +------------------+             |
+| | MySQL Primary    |<--> My
