@@ -33,3 +33,4 @@ else
     # Check specific subdomain
     get_subdomain_info "$domain" "$subdomain"
 fi
+

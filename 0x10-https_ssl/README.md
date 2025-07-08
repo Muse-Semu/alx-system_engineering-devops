@@ -19,10 +19,10 @@ This task involves configuring a domain zone with specific subdomains (`www`, `l
 
 ### Requirements
 - Add A records for the following subdomains in your DNS provider's control panel:
-  - `www.yourdomain.com` → Load balancer IP
-  - `lb-01.yourdomain.com` → Load balancer IP
-  - `web-01.yourdomain.com` → Web server 01 IP
-  - `web-02.yourdomain.com` → Web server 02 IP
+  - `13.221.73.254` → Load balancer IP
+  - `lb-01.3.82.236.254	` → Load balancer IP
+  - `web-01.54.224.98.142	` → Web server 01 IP
+  - `web-02.3.80.133.14` → Web server 02 IP
 - The script accepts two arguments:
   - `domain` (mandatory): The domain name to audit (e.g., `holberton.online`)
   - `subdomain` (optional): A specific subdomain to audit (e.g., `web-02`)
@@ -140,3 +140,4 @@ This task configures HAproxy to handle SSL termination for the `www` subdomain, 
 - Ensure your DNS records are correctly configured before running the script or setting up HAproxy.
 - Test all configurations thoroughly to avoid downtime.
 - The Bash script does not handle edge cases like empty parameters or nonexistent domains/subdomains, as per the requirements.
+
