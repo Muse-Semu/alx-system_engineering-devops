@@ -48,7 +48,7 @@ echo "ALX for the win!" > "$WEB_ROOT/index.html"
 # Restart Nginx
 systemctl restart nginx
 
-# Step 5: Create HAProxy configuration
+# Step 5: Create HAProxy configuration with HTTP-to-HTTPS redirect
 echo "Generating HAProxy configuration..."
 cat > "$HAPROXY_CFG" << EOL
 global
@@ -66,6 +66,11 @@ defaults
     timeout connect 5000
     timeout client 50000
     timeout server 50000
+
+frontend http_front
+    bind *:80
+    mode http
+    redirect scheme https code 301 if !{ ssl_fc }
 
 frontend https_front
     bind *:443 ssl crt $CERT_PATH/fullchain.pem
@@ -85,7 +90,8 @@ haproxy -c -f "$HAPROXY_CFG" || { echo "HAProxy config validation failed"; exit 
 systemctl restart haproxy
 
 # Step 7: Test the setup
-echo "Testing HTTPS response..."
-curl -sI "https://$DOMAIN" | grep -q "200 OK" || { echo "HTTPS test failed"; exit 1; }
-curl "https://$DOMAIN" | grep -q "ALX" || { echo "ALX not found in response"; exit 1; }
-echo "Setup complete! Access https://$DOMAIN to verify."
+echo "Testing HTTP-to-HTTPS redirect..."
+curl -sIL "http://$DOMAIN" | grep -q "301 Moved Permanently" || { echo "Redirect test failed"; exit 1; }
+curl -sIL "http://$DOMAIN" | grep -q "Location: https://$DOMAIN/" || { echo "Redirect location incorrect"; exit 1; }
+curl "https://$DOMAIN" | grep -q "ALX" || { echo "ALX not found in HTTPS response"; exit 1; }
+echo "Setup complete! Access http://$DOMAIN (redirects to HTTPS) to verify."
